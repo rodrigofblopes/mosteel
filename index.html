@@ -180,21 +180,21 @@ const sum = (a,k) => a.reduce((s,x)=>s+(x[k]||0),0);
 const sinal = v => (v>=0?'+':'−')+brl(Math.abs(v));
 function avisoPeriodo(){
   return pago()
-   ? `<div class="card mt formula"><b>Pagamento de 05/11 (Construtora Neto Lara):</b> considerou a produção <b>até 08/11</b>, incluindo o fim de semana. Foram pagas as <b>paredes</b>: panelização, elevação e fixação de 281,51 m², e os valores acima são exatamente os pagos. Até 08/11 a equipe também executou <b>${kg(sumArr(P.Cobertura.mont))} de treliças/tesouras montadas</b> e <b>${kg(sumArr(P.Cobertura.lev))} de cobertura içada</b>, que ainda não foram pagos e <b>entram no pagamento de 05/12</b>.</div>`
-   : `<div class="card mt formula"><b>2º pagamento em andamento:</b> produção de 09/11 até hoje, a ser paga pela Construtora Neto Lara em 05/12 (corte em 30/11). Soma-se a cobertura executada até 08/11 que ainda não foi paga. Presença e desempenho considerados 100% até o fechamento.</div>`;
+   ? `<div class="card mt formula"><b>Pagamento de 05/11 (Construtora Neto Lara):</b> considerou a produção até 08/11 e pagou as <b>paredes</b>: panelização, elevação e fixação de 281,51 m². Os valores acima são exatamente os pagos.</div>`
+   : `<div class="card mt formula"><b>Próximo pagamento (05/12):</b> entra toda a <b>cobertura</b> (treliças/tesouras montadas e içadas, desde o início da obra) e as <b>paredes a partir de 09/11</b>. Valores parciais até hoje. Presença e desempenho considerados 100% até o fechamento.</div>`;
 }
 const sumArr = a => a.reduce((x,y)=>x+y,0);
 function pageEquipe(){
   const ps=PER.pessoas, lev=sumArr(teamLev), mon=sumArr(teamMont), calc=sum(ps,'calcKg');
   const tiles = pago()
-   ? tile('Total pago em 05/11',brl(sum(ps,'salario')+sum(ps,'pago')),`salários ${brl(sum(ps,'salario'))} + bônus ${brl(sum(ps,'pago'))}`,true)+tile('Bônus pago (paredes)',brl(sum(ps,'pago')),'= produção das paredes até 08/11')+tile('Executado e ainda não pago',brl(sum(ps,'saldo')),'cobertura · entra em 05/12')
-   : tile('Bônus a pagar em 05/12 (até agora)',brl(sum(ps,'aPagar')),'produção + saldo do 1º pagamento',true)+tile('Bônus da produção (kg)',brl(calc),'desde 09/11')+tile('Cobertura até 08/11 não paga',brl(sum(ps,'ajuste')),'somada');
+   ? tile('Total pago em 05/11',brl(sum(ps,'salario')+sum(ps,'pago')),`salários ${brl(sum(ps,'salario'))} + bônus ${brl(sum(ps,'pago'))}`,true)+tile('Bônus pago',brl(sum(ps,'pago')),'paredes até 08/11')
+   : tile('Previsto para 05/12 (até agora)',brl(sum(ps,'salario')+calc),`salários ${brl(sum(ps,'salario'))} + bônus ${brl(calc)}`,true)+tile('Bônus da produção',brl(calc),'cobertura + paredes desde 09/11');
   const head = pago()
-   ? '<th class="r">Salário</th><th class="r">Bônus pago</th><th class="r">Total recebido</th><th class="r">Cobertura executada, não paga</th>'
-   : '<th class="r">Salário</th><th class="r">Bônus (kg)</th><th class="r">Cobertura até 08/11</th><th class="r">Bônus a pagar</th><th class="r">Total previsto</th>';
+   ? '<th class="r">Salário</th><th class="r">Bônus pago</th><th class="r">Total recebido</th>'
+   : '<th class="r">Salário</th><th class="r">Bônus</th><th class="r">Total previsto</th>';
   const cells = p => pago()
-   ? `<td class="r">${brl(p.salario)}</td><td class="r">${brl(p.pago)}</td><td class="r"><b>${brl(p.salario+p.pago)}</b></td><td class="r">${brl(p.saldo)}</td>`
-   : `<td class="r">${brl(p.salario)}</td><td class="r">${brl(p.calcKg)}</td><td class="r">${brl(p.ajuste)}</td><td class="r">${brl(p.aPagar)}</td><td class="r"><b>${brl(p.salario+p.aPagar)}</b></td>`;
+   ? `<td class="r">${brl(p.salario)}</td><td class="r">${brl(p.pago)}</td><td class="r"><b>${brl(p.salario+p.pago)}</b></td>`
+   : `<td class="r">${brl(p.salario)}</td><td class="r">${brl(p.calcKg)}</td><td class="r"><b>${brl(p.salario+p.calcKg)}</b></td>`;
   $('#app').innerHTML=`
   <h1>Equipe – visão geral</h1>
   <p class="sub">${esc(PER.nome)} · ${dd(PER.ini)} a ${dd(PER.fim)} · ${PER.diasUteis} dias úteis · ${ps.length} profissionais</p>
@@ -220,15 +220,15 @@ function pagePessoa(p){
   const melhor=daily.reduce((b,v,i)=>v>daily[b]?i:b,0);
   const diasProd=daily.filter(v=>v>0).length;
   const tiles = pago()
-   ? tile('Total recebido em 05/11',brl(p.salario+p.pago),`salário ${brl(p.salario)} + bônus ${brl(p.pago)}`,true)+tile('Bônus pago (paredes)',brl(p.pago),'= produção das paredes até 08/11')+tile('Executado e ainda não pago',brl(p.saldo),'cobertura · entra em 05/12')
-   : tile('Previsto para 05/12',brl(p.salario+p.aPagar),`salário ${brl(p.salario)} + bônus ${brl(p.aPagar)}`,true)+tile('Bônus da produção (kg)',brl(p.calcKg),'desde 09/11')+tile('Cobertura até 08/11 não paga',brl(p.ajuste),'somada')+tile('Bônus a pagar',brl(p.aPagar),'produção + cobertura pendente')+tile('Salário do mês',brl(p.salario));
+   ? tile('Total recebido em 05/11',brl(p.salario+p.pago),`salário ${brl(p.salario)} + bônus ${brl(p.pago)}`,true)+tile('Bônus pago',brl(p.pago),'paredes até 08/11')+tile('Salário',brl(p.salario))
+   : tile('Previsto para 05/12',brl(p.salario+p.calcKg),'salário + bônus, até agora',true)+tile('Bônus da produção',brl(p.calcKg),'cobertura + paredes desde 09/11')+tile('Salário do mês',brl(p.salario));
   $('#app').innerHTML=`
   <h1>${esc(p.nome)}</h1>
   <p class="sub">${esc(p.funcao)} · ${esc(PER.nome)} · ${dd(PER.ini)} a ${dd(PER.fim)}</p>
   <div class="grid tiles">${tiles}</div>
   <div class="grid two mt">
     <div class="card"><h2>Bônus acumulado no período</h2><p class="cap">Quanto o bônus foi crescendo a cada dia de produção · melhor dia: ${dd(D[melhor])} (${brl(daily[melhor])})</p><div id="c2"></div></div>
-    <div class="card"><h2>De onde vem o bônus</h2><p class="cap">${pago()?'Serviços pagos em 05/11':'Por serviço medido no período'}</p><div id="c3"></div>${pago()&&p.pendente?`<p class="cap mt"><b>Executado até 08/11 e ainda não pago</b> (entra em 05/12)</p>`+p.pendente.map(r=>`<div class="row"><span>${esc(r.nome)}</span><span>${brl(r.valor)}</span></div>`).join(''):''}</div>
+    <div class="card"><h2>De onde vem o bônus</h2><p class="cap">${pago()?'Serviços pagos em 05/11':'Por serviço medido no período'}</p><div id="c3"></div></div>
   </div>
   <div class="grid two mt">
     <div class="card"><h2>Produção da equipe por dia</h2><p class="cap">O bônus é calculado sobre a produção da equipe em que ${esc(p.nome)} trabalhou</p>
