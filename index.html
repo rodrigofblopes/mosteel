@@ -180,21 +180,21 @@ const sum = (a,k) => a.reduce((s,x)=>s+(x[k]||0),0);
 const sinal = v => (v>=0?'+':'−')+brl(Math.abs(v));
 function avisoPeriodo(){
   return pago()
-   ? `<div class="card mt formula"><b>O que aconteceu neste pagamento:</b> o dono pagou pela tabela em m² considerando <b>100% das paredes</b> (281,51 m²) em panelização, elevação e fixação. Pela produção real até 05/11, as paredes estavam 100% montadas, mas só <b>${pct(sumArr(P.Parede.lev)/DATA.obraStatus.Parede.total)} levantadas</b>. Por outro lado, as <b>treliças/tesouras da cobertura já estavam montadas</b> (${kg(sumArr(P.Cobertura.mont))}) e não entraram no pagamento. A coluna "Diferença" mostra quanto o cálculo por kg dá a mais ou a menos.</div>`
-   : `<div class="card mt formula"><b>Período em aberto:</b> produção lançada de 06/11 até hoje, ainda não paga. A elevação e fixação das paredes que subiram neste período <b>já foram adiantadas</b> no pagamento de 05/11 (o dono pagou 100% das paredes) e por isso são descontadas. Presença e desempenho considerados 100% até o fechamento.</div>`;
+   ? `<div class="card mt formula"><b>O que aconteceu no pagamento de 05/11:</b> o dono pagou outubro pela tabela em m² considerando <b>100% das paredes</b> (281,51 m²) em panelização, elevação e fixação. Em outubro as paredes foram todas <b>montadas</b>, mas <b>nenhuma foi levantada</b>: a elevação aconteceu de 04 a 06/11. Por outro lado, ${kg(sumArr(P.Cobertura.mont))} de treliças/tesouras já estavam montadas e não entraram no pagamento. O saldo pago a mais é um <b>adiantamento</b> e será descontado no bônus de novembro.</div>`
+   : `<div class="card mt formula"><b>Novembro em andamento:</b> produção de 01/11 até hoje, a ser paga em 05/12. O bônus calculado já inclui a elevação das paredes, que foi adiantada em 05/11, então o <b>adiantamento de outubro é descontado</b> aqui. Presença e desempenho considerados 100% até o fechamento do mês.</div>`;
 }
 const sumArr = a => a.reduce((x,y)=>x+y,0);
 function pageEquipe(){
   const ps=PER.pessoas, lev=sumArr(teamLev), mon=sumArr(teamMont), calc=sum(ps,'calcKg');
   const tiles = pago()
-   ? tile('Bônus pago pelo dono (m²)',brl(sum(ps,'pago')),'pagamento de 05/11',true)+tile('Bônus pela produção real (kg)',brl(calc),'mesma tabela, convertida')+tile('Diferença',sinal(sum(ps,'saldo')),'kg − pago')
-   : tile('Bônus a pagar no próximo fechamento',brl(sum(ps,'aPagar')),'já descontado o adiantamento',true)+tile('Bônus da produção (kg)',brl(calc),'acumulado no período')+tile('Já adiantado em 05/11',brl(sum(ps,'adiantado')),'elevação de paredes');
+   ? tile('Bônus pago pelo dono (m²)',brl(sum(ps,'pago')),'pagamento de 05/11',true)+tile('Bônus pela produção real (kg)',brl(calc),'mesma tabela, convertida')+tile('Adiantado (pago a mais)',brl(-sum(ps,'saldo')),'desconta em novembro')
+   : tile('Bônus a pagar em 05/12 (até agora)',brl(sum(ps,'aPagar')),'já descontado o adiantamento',true)+tile('Bônus da produção (kg)',brl(calc),'acumulado no mês')+tile('Adiantamento de outubro',brl(sum(ps,'adiantado')),'descontado');
   const head = pago()
-   ? '<th class="r">Salário</th><th class="r">Pago (m²)</th><th class="r">Calculado (kg)</th><th class="r">Diferença</th>'
-   : '<th class="r">Calculado (kg)</th><th class="r">Já adiantado</th><th class="r">A pagar</th>';
+   ? '<th class="r">Salário</th><th class="r">Pago (m²)</th><th class="r">Calculado (kg)</th><th class="r">Adiantado</th>'
+   : '<th class="r">Salário</th><th class="r">Bônus (kg)</th><th class="r">Adiantamento</th><th class="r">Bônus a pagar</th><th class="r">Total previsto</th>';
   const cells = p => pago()
-   ? `<td class="r">${brl(p.salario)}</td><td class="r">${brl(p.pago)}</td><td class="r">${brl(p.calcKg)}</td><td class="r"><b>${sinal(p.saldo)}</b></td>`
-   : `<td class="r">${brl(p.calcKg)}</td><td class="r">${brl(p.adiantado)}</td><td class="r"><b>${brl(p.aPagar)}</b></td>`;
+   ? `<td class="r">${brl(p.salario)}</td><td class="r">${brl(p.pago)}</td><td class="r">${brl(p.calcKg)}</td><td class="r"><b>${brl(-p.saldo)}</b></td>`
+   : `<td class="r">${brl(p.salario)}</td><td class="r">${brl(p.calcKg)}</td><td class="r">−${brl(p.adiantado)}</td><td class="r">${brl(p.aPagar)}</td><td class="r"><b>${brl(p.salario+p.aPagar)}</b></td>`;
   $('#app').innerHTML=`
   <h1>Equipe – visão geral</h1>
   <p class="sub">${esc(PER.nome)} · ${dd(PER.ini)} a ${dd(PER.fim)} · ${PER.diasUteis} dias úteis · ${ps.length} profissionais</p>
@@ -204,9 +204,9 @@ function pageEquipe(){
   </div>
   ${avisoPeriodo()}
   <div class="card mt"><h2>Profissionais</h2><p class="cap">Clique numa linha para abrir o painel individual.</p>
-   <div style="overflow-x:auto"><table><thead><tr><th>Nome</th><th>Função</th>${head}</tr></thead><tbody>
+   <table><thead><tr><th>Nome</th><th>Função</th>${head}</tr></thead><tbody>
    ${ps.map(p=>`<tr class="click" onclick="location.hash='#/${PER.id}/${slug(p.nome)}'"><td><b>${esc(p.nome)}</b></td><td>${esc(p.funcao)}</td>${cells(p)}</tr>`).join('')}
-   </tbody></table></div></div>
+   </tbody></table></div>
   <div class="grid two mt">
     <div class="card"><h2>Produção da equipe por dia</h2><p class="cap">Kg de aço montado (panelização) e levantado (elevação), paredes + cobertura</p>
       ${legend([['Montado',css('--series-1')],['Levantado',css('--series-2')]])}<div id="c1"></div></div>
@@ -220,8 +220,8 @@ function pagePessoa(p){
   const melhor=daily.reduce((b,v,i)=>v>daily[b]?i:b,0);
   const diasProd=daily.filter(v=>v>0).length;
   const tiles = pago()
-   ? tile('Bônus pago em 05/11',brl(p.pago),'pela tabela em m²',true)+tile('Bônus pela produção real',brl(p.calcKg),'calculado por kg')+tile('Diferença',sinal(p.saldo),p.saldo>=0?'a favor do profissional':'pago a mais')+tile('Salário do período',brl(p.salario))+tile('Total recebido em 05/11',brl(p.salario+p.pago),'salário + bônus')
-   : tile('A pagar no próximo fechamento',brl(p.aPagar),'até agora',true)+tile('Bônus da produção (kg)',brl(p.calcKg),'acumulado no período')+tile('Já adiantado em 05/11',brl(p.adiantado),'elevação de paredes')+tile('Presença / desempenho','100%','confirmar no fechamento');
+   ? tile('Bônus pago em 05/11',brl(p.pago),'pela tabela em m²',true)+tile('Bônus pela produção real',brl(p.calcKg),'calculado por kg')+tile('Adiantado (pago a mais)',brl(-p.saldo),'desconta em novembro')+tile('Salário do período',brl(p.salario))+tile('Total recebido em 05/11',brl(p.salario+p.pago),'salário + bônus')
+   : tile('Previsto para 05/12',brl(p.salario+p.aPagar),'salário + bônus, até agora',true)+tile('Bônus da produção (kg)',brl(p.calcKg),'acumulado em novembro')+tile('Adiantamento de outubro',brl(p.adiantado),'descontado')+tile('Bônus a pagar',brl(p.aPagar),'bônus − adiantamento')+tile('Salário do mês',brl(p.salario));
   $('#app').innerHTML=`
   <h1>${esc(p.nome)}</h1>
   <p class="sub">${esc(p.funcao)} · ${esc(PER.nome)} · ${dd(PER.ini)} a ${dd(PER.fim)}</p>
@@ -256,7 +256,7 @@ function route(){
   const parts=location.hash.replace(/^#\/?/,'').split('/');
   setPeriod(parts[0]||DATA.periodos[0].id);
   const p=PER.pessoas.find(x=>slug(x.nome)===parts[1]);
-  const per=DATA.periodos.map(x=>`<a href="#/${x.id}${p?'/'+slug(p.nome):''}" class="${x===PER?'on':''}">${esc(x.tipo==='pago'?'Pago 05/11':'Em aberto')}</a>`).join('');
+  const per=DATA.periodos.map(x=>`<a href="#/${x.id}${p?'/'+slug(p.nome):''}" class="${x===PER?'on':''}">${esc(x.tipo==='pago'?'Outubro':'Novembro')}</a>`).join('');
   $('#nav').innerHTML=per+`<span style="width:12px"></span><a href="#/${PER.id}" class="${p?'':'on'}">Equipe</a>`+PER.pessoas.map(x=>`<a href="#/${PER.id}/${slug(x.nome)}" class="${p===x?'on':''}">${esc(x.nome)}</a>`).join('');
   p?pagePessoa(p):pageEquipe(); window.scrollTo(0,0);
 }
