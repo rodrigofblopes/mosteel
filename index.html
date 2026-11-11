@@ -187,13 +187,13 @@ const sumArr = a => a.reduce((x,y)=>x+y,0);
 function pageEquipe(){
   const ps=PER.pessoas, lev=sumArr(teamLev), mon=sumArr(teamMont), calc=sum(ps,'calcKg');
   const tiles = pago()
-   ? tile('Bônus pago pelo dono (m²)',brl(sum(ps,'pago')),'pagamento de 05/11',true)+tile('Bônus pela produção real (kg)',brl(calc),'mesma tabela, convertida')+tile('Saldo a favor da equipe',sinal(sum(ps,'saldo')),'entra no pagamento de 05/12')
+   ? tile('Total pago em 05/11',brl(sum(ps,'salario')+sum(ps,'pago')),`salários ${brl(sum(ps,'salario'))} + bônus ${brl(sum(ps,'pago'))}`,true)+tile('Total pela produção real',brl(sum(ps,'salario')+calc),`salários + bônus ${brl(calc)}`)+tile('Saldo a favor da equipe',sinal(sum(ps,'saldo')),'entra no pagamento de 05/12')
    : tile('Bônus a pagar em 05/12 (até agora)',brl(sum(ps,'aPagar')),'produção + saldo do 1º pagamento',true)+tile('Bônus da produção (kg)',brl(calc),'desde 09/11')+tile('Saldo do 1º pagamento',sinal(sum(ps,'ajuste')),'somado');
   const head = pago()
-   ? '<th class="r">Salário</th><th class="r">Pago (m²)</th><th class="r">Calculado (kg)</th><th class="r">Saldo</th>'
+   ? '<th class="r">Salário</th><th class="r">Bônus pago (m²)</th><th class="r">Total recebido</th><th class="r">Bônus real (kg)</th><th class="r">Total real</th><th class="r">Saldo</th>'
    : '<th class="r">Salário</th><th class="r">Bônus (kg)</th><th class="r">Saldo 1º pag.</th><th class="r">Bônus a pagar</th><th class="r">Total previsto</th>';
   const cells = p => pago()
-   ? `<td class="r">${brl(p.salario)}</td><td class="r">${brl(p.pago)}</td><td class="r">${brl(p.calcKg)}</td><td class="r"><b>${sinal(p.saldo)}</b></td>`
+   ? `<td class="r">${brl(p.salario)}</td><td class="r">${brl(p.pago)}</td><td class="r"><b>${brl(p.salario+p.pago)}</b></td><td class="r">${brl(p.calcKg)}</td><td class="r">${brl(p.salario+p.calcKg)}</td><td class="r"><b>${sinal(p.saldo)}</b></td>`
    : `<td class="r">${brl(p.salario)}</td><td class="r">${brl(p.calcKg)}</td><td class="r">${sinal(p.ajuste)}</td><td class="r">${brl(p.aPagar)}</td><td class="r"><b>${brl(p.salario+p.aPagar)}</b></td>`;
   $('#app').innerHTML=`
   <h1>Equipe – visão geral</h1>
@@ -220,8 +220,8 @@ function pagePessoa(p){
   const melhor=daily.reduce((b,v,i)=>v>daily[b]?i:b,0);
   const diasProd=daily.filter(v=>v>0).length;
   const tiles = pago()
-   ? tile('Bônus pago em 05/11',brl(p.pago),'pela tabela em m²',true)+tile('Bônus pela produção real',brl(p.calcKg),'calculado por kg')+tile('Saldo a receber',sinal(p.saldo),'entra no pagamento de 05/12')+tile('Salário do período',brl(p.salario))+tile('Total recebido em 05/11',brl(p.salario+p.pago),'salário + bônus')
-   : tile('Previsto para 05/12',brl(p.salario+p.aPagar),'salário + bônus, até agora',true)+tile('Bônus da produção (kg)',brl(p.calcKg),'desde 09/11')+tile('Saldo do 1º pagamento',sinal(p.ajuste),'somado')+tile('Bônus a pagar',brl(p.aPagar),'produção + saldo')+tile('Salário do mês',brl(p.salario));
+   ? tile('Total recebido em 05/11',brl(p.salario+p.pago),`salário ${brl(p.salario)} + bônus ${brl(p.pago)}`,true)+tile('Total pela produção real',brl(p.salario+p.calcKg),`salário ${brl(p.salario)} + bônus ${brl(p.calcKg)}`)+tile('Saldo a receber',sinal(p.saldo),'entra no pagamento de 05/12')
+   : tile('Previsto para 05/12',brl(p.salario+p.aPagar),`salário ${brl(p.salario)} + bônus ${brl(p.aPagar)}`,true)+tile('Bônus da produção (kg)',brl(p.calcKg),'desde 09/11')+tile('Saldo do 1º pagamento',sinal(p.ajuste),'somado')+tile('Bônus a pagar',brl(p.aPagar),'produção + saldo')+tile('Salário do mês',brl(p.salario));
   $('#app').innerHTML=`
   <h1>${esc(p.nome)}</h1>
   <p class="sub">${esc(p.funcao)} · ${esc(PER.nome)} · ${dd(PER.ini)} a ${dd(PER.fim)}</p>
